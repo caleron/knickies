@@ -11,11 +11,14 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "js-cookie": "^2.2.0",
     "vue": "^2.3.3",
     "vue-router": "^2.3.1",
+    "vue-toasted": "^1.1.24",
     "vuetify": "^0.17.2"
   },
   "devDependencies": {
+    "@types/js-cookie": "^2.1.0",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.22.1",
     "babel-eslint": "^7.1.1",
