@@ -2,22 +2,59 @@
   <v-container fluid>
     <v-layout justify-center align-center wrap>
       <v-flex xs12 sm8 md6 lg4>
+        <v-dialog v-model="createDialog" max-width="500px">
+          <v-btn color="primary" slot="activator">Spiel erstellen</v-btn>
+          <v-card>
+            <v-card-title>
+              <span class="headline">Spiel erstellen</span>
+            </v-card-title>
+            <v-card-text>
+              <v-form v-model="newGameValid" lazy-validation>
+                <v-container grid-list-md>
+                  <v-layout wrap>
+                    <v-flex xs12>
+                      <v-text-field label="Name" :rules="nameRules" counter="50" required
+                                    v-model="newGameName"></v-text-field>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-slider :label="'Anzahl Zettel: ' + newGameSheetCount" v-model="newGameSheetCount"
+                                thumb-label ticks step="1" min="3" max="20"></v-slider>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-slider :label="'Anzahl Texte pro Zettel: ' +  newGameTextCount" v-model="newGameTextCount"
+                                thumb-label ticks step="1" min="5" max="30"></v-slider>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-select label="Teilnehmer" v-model="newGameUsers" multiple autocomplete chips :items="users"
+                                required :rules="userRules"></v-select>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-form>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" flat @click.native="createDialog = false">Abbrechen</v-btn>
+              <v-btn color="blue darken-1" flat @click.native="createGame">Speichern</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-list two-line>
-          <v-subheader>{{runningGamesTitle}}</v-subheader>
+          <v-subheader class="headline">{{runningGamesTitle}}</v-subheader>
           <template v-for="item in runningGames">
             <v-list-tile v-bind:key="item.title" @click="openGame(item)">
               <v-list-tile-content>
-                <v-list-tile-title v-html="item.name"></v-list-tile-title>
-                <v-list-tile-sub-title v-html="item.created"></v-list-tile-sub-title>
+                <v-list-tile-title>{{item.name}}</v-list-tile-title>
+                <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
           </template>
-          <v-subheader>{{closedGamesTitle}}</v-subheader>
+          <v-subheader class="headline">{{closedGamesTitle}}</v-subheader>
           <template v-for="item in closedGames">
             <v-list-tile v-bind:key="item.title" @click="openGame(item)">
               <v-list-tile-content>
-                <v-list-tile-title v-html="item.name"></v-list-tile-title>
-                <v-list-tile-sub-title v-html="item.created"></v-list-tile-sub-title>
+                <v-list-tile-title>{{item.name}}</v-list-tile-title>
+                <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
             <v-divider inset="true"></v-divider>
@@ -29,6 +66,7 @@
 </template>
 
 <script>
+  import { SocketClient } from '../services/SocketClient'
   import { SessionManager } from '../services/SessionManager'
 
   export default {
@@ -38,17 +76,42 @@
         title: 'Übersicht',
         runningGamesTitle: 'Laufende Spiele',
         closedGamesTitle: 'Abgeschlossene Spiele',
-        runningGames: [],
-        closedGames: []
+        createDialog: false,
+        newGameValid: true,
+        newGameName: '',
+        newGameSheetCount: 5,
+        newGameTextCount: 10,
+        newGameUsers: [],
+        nameRules: [
+          (v) => !!v || 'Name fehlt',
+          (v) => v.length >= 3 || 'Mindestens 3 Zeichen',
+          (v) => v.length <= 20 || 'Maximal 50 Zeichen',
+          (v) => /^[a-zA-Z0-9]+$/.test(v) || 'Nur Buchstaben und Zahlen erlaubt'
+        ],
+        userRules: [(v) => v.length > 1 || 'Mindestens 2 Mitspieler nötig']
       }
     },
-    mounted () {
-      this.runningGames = SessionManager.getRunningGames()
-      this.closedGames = SessionManager.getClosedGames()
+    computed: {
+      runningGames: () => {
+        return SessionManager.status.runningGames
+      },
+      closedGames: () => {
+        return SessionManager.status.closedGames
+      },
+      users () {
+        return Array.from(SessionManager.status.users.values())
+      }
     },
     methods: {
       openGame (game) {
         this.$router.push('/game/' + game.id)
+      },
+      createGame () {
+        if (!this.newGameValid) {
+          console.log('new game is not valid')
+          return
+        }
+        SocketClient.createGame(this.newGameName, this.newGameSheetCount, this.newGameTextCount, this.newGameUsers)
       }
     }
   }

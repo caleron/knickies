@@ -23,7 +23,10 @@ let router = new Router(
         }
       }, {
         path: '/game/:id',
-        component: RunningGameView
+        component: RunningGameView,
+        meta: {
+          requiresAuth: true
+        }
       }
     ]
   })
@@ -34,6 +37,7 @@ router.beforeEach((to, from, next) => {
     // auth required, now check if logged in
     SessionManager.checkLoggedIn().then(loggedIn => {
       if (!loggedIn) {
+        console.log('user not logged in, redirecting to login')
         // not logged in, redirect to login
         next({
           path: '/login',

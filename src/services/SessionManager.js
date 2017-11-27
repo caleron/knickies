@@ -6,9 +6,9 @@ class Manager {
   cookieLoaded = false
   token = ''
   /**
-   * @type {{runningGames: [], closedGames[]}}
+   * @type {{runningGames: [], closedGames: [], currentUser: string, users?: Map<string, string>}}
    */
-  status = {}
+  status = {runningGames: [], closedGames: [], currentUser: '', users: new Map()}
 
   checkLoggedIn () {
     if (!this.cookieLoaded) {
@@ -19,9 +19,7 @@ class Manager {
       if (token && token.length > 10) {
         this.token = token
         // token cookie exists, retrieve the clients for the token
-        return SocketClient.connect(null, null, this.token).then((response) => {
-          this.token = response.token
-          this.games = response.games
+        return SocketClient.connect(null, null, this.token).then(() => {
           return true
         }).catch(() => {
           // reset the cookie to not attempt login again
@@ -33,14 +31,39 @@ class Manager {
     return Promise.resolve(this.token.length > 0)
   }
 
-  updateGames (answer) {
-    this.status = {
-      runningGames: answer.runningGames,
-      closedGames: answer.closedGames
+  updateStatus (answer) {
+    // this.status.runningGames = answer.runningGames
+    this.status.closedGames = answer.closedGames
+    this.status.currentUser = answer.currentUser
+
+    this.status.runningGames.splice(0, this.status.runningGames.length)
+    for (let game of answer.runningGames) {
+      this.status.runningGames.push(game)
+    }
+
+    if (answer.token) {
+      this.token = answer.token
+      Cookies.set(this.cookieName, this.token)
+    }
+    // map users to their lowercase
+    this.status.users = new Map()
+    for (let user of answer.users) {
+      this.status.users.set(user.toLowerCase(), user)
+    }
+    for (let game of this.status.runningGames) {
+      this.setSubtitle(game)
+    }
+    for (let game of this.status.closedGames) {
+      this.setSubtitle(game)
     }
   }
 
   getGame (id) {
+    id = Number(id)
+    if (!this.status.runningGames || !this.status.closedGames) {
+      console.log(`could not get game ${id}, games not loaded`)
+      return
+    }
     for (let game of this.status.runningGames) {
       if (game.id === id) {
         return game
@@ -60,6 +83,28 @@ class Manager {
   getClosedGames () {
     return this.status.closedGames
   }
+
+  setSubtitle (game) {
+    let users = game.users.slice()
+    let index = users.indexOf(game.creator)
+    if (index !== -1) {
+      // remove the creator from the string
+      users.splice(index, 1)
+    }
+    let subtitle = 'mit&nbsp;<b>' + this.status.users.get(game.creator) + '</b>'
+    let count = 0
+    for (let user of users) {
+      // max 3 entries
+      if (count >= 3) {
+        subtitle += ', ...'
+        break
+      }
+      subtitle += ', ' + this.status.users.get(user)
+      count++
+    }
+    game.subtitle = subtitle
+  }
 }
 
 export let SessionManager = new Manager()
+window.sm = SessionManager
