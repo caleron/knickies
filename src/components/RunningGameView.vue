@@ -2,14 +2,14 @@
   <v-container fluid>
     <v-layout justify-center align-center wrap>
       <v-flex xs12 sm8 md6 lg4>
-        <h1 class="headline">Spiel {{game.name}}</h1>
+        <h1 class="headline">{{game.name}}</h1>
         <v-subheader v-html="game.subtitle"></v-subheader>
         <v-list two-line>
           <template v-for="sheet in game.sheets">
-            <v-list-tile v-if="sheet.nextUser.toLowerCase() == currentUser" v-bind:key="sheet.number"
+            <v-list-tile v-if="sheet.nextUser.toLowerCase() == status.currentUser.toLowerCase()" v-bind:key="sheet.number"
                          @click="showDialog(sheet)">
               <v-list-tile-content>
-                <v-list-tile-title>Zettel {{sheet.number}} <span
+                <v-list-tile-title class="primary--text">Zettel {{sheet.number + 1}} <span
                   class="grey--text">({{sheet.texts.length}}/{{game.textCount}})</span>
                 </v-list-tile-title>
                 <v-list-tile-sub-title>Du bist dran!</v-list-tile-sub-title>
@@ -17,7 +17,7 @@
             </v-list-tile>
             <v-list-tile v-else v-bind:key="sheet.number">
               <v-list-tile-content>
-                <v-list-tile-title>Zettel {{sheet.number}} <span
+                <v-list-tile-title>Zettel {{sheet.number + 1}} <span
                   class="grey--text">({{sheet.texts.length}}/{{game.textCount}})</span></v-list-tile-title>
                 <v-list-tile-sub-title>Du bist nicht dran...</v-list-tile-sub-title>
               </v-list-tile-content>
@@ -59,15 +59,13 @@
       return {
         addTextDialog: false,
         dialogSheet: {texts: []},
-        newText: ''
+        newText: '',
+        status: SessionManager.status
       }
     },
     computed: {
-      currentUser: () => {
-        return SessionManager.status.currentUser.toLowerCase()
-      },
       game () {
-        if (!this.$route.params.id) {
+        if (!this.$route.params.id && this.$route.params.id !== 0) {
           return {}
         }
         return SessionManager.getGame(this.$route.params.id)
@@ -75,7 +73,10 @@
     },
     methods: {
       showDialog (sheet) {
-        this.dialogSheet = sheet
+        if (this.dialogSheet !== sheet) {
+          this.dialogSheet = sheet
+          this.newText = ''
+        }
         this.addTextDialog = true
       },
       addText () {

@@ -22,7 +22,8 @@ class SocketManager {
     // if (document.location.hostname === 'localhost') {
     //  this.hostName = '192.168.1.103'
     // } else {
-    this.hostName = document.location.hostname
+    // this.hostName = document.location.hostname
+    this.hostName = '192.168.178.126'
     // }
   }
 
@@ -78,7 +79,9 @@ class SocketManager {
   static onMessage (e) {
     let answer = JSON.parse(e.data)
     console.log('received message', answer)
-    SessionManager.updateStatus(answer)
+    if (!answer.error) {
+      SessionManager.updateStatus(answer)
+    }
 
     // fulfill the corresponding promise if a request id is set
     if (answer.requestId !== undefined && SocketClient.promises.length > answer.requestId) {

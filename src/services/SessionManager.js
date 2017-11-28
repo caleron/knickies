@@ -32,14 +32,9 @@ class Manager {
   }
 
   updateStatus (answer) {
-    // this.status.runningGames = answer.runningGames
+    this.status.runningGames = answer.runningGames
     this.status.closedGames = answer.closedGames
     this.status.currentUser = answer.currentUser
-
-    this.status.runningGames.splice(0, this.status.runningGames.length)
-    for (let game of answer.runningGames) {
-      this.status.runningGames.push(game)
-    }
 
     if (answer.token) {
       this.token = answer.token
@@ -52,6 +47,13 @@ class Manager {
     }
     for (let game of this.status.runningGames) {
       this.setSubtitle(game)
+
+      for (let sheet of game.sheets) {
+        if (sheet.nextUser.toLowerCase() === this.status.currentUser.toLowerCase()) {
+          game.myTurn = true
+          break
+        }
+      }
     }
     for (let game of this.status.closedGames) {
       this.setSubtitle(game)
@@ -108,3 +110,4 @@ class Manager {
 
 export let SessionManager = new Manager()
 window.sm = SessionManager
+window.onerror = window.alert

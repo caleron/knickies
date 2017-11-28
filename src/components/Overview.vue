@@ -17,16 +17,22 @@
                                     v-model="newGameName"></v-text-field>
                     </v-flex>
                     <v-flex xs12>
-                      <v-slider :label="'Anzahl Zettel: ' + newGameSheetCount" v-model="newGameSheetCount"
-                                thumb-label ticks step="1" min="3" max="20"></v-slider>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-slider :label="'Anzahl Texte pro Zettel: ' +  newGameTextCount" v-model="newGameTextCount"
-                                thumb-label ticks step="1" min="5" max="30"></v-slider>
-                    </v-flex>
-                    <v-flex xs12>
-                      <v-select label="Teilnehmer" v-model="newGameUsers" multiple autocomplete chips :items="users"
+                      <v-select label="Teilnehmer" v-model="newGameUsers" multiple chips :items="users"
                                 required :rules="userRules"></v-select>
+                    </v-flex>
+                    <v-flex xs12>
+                      <div>Anzahl Zettel: {{newGameSheetCount}}</div>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-slider v-model="newGameSheetCount"
+                                step="1" min="3" max="20"></v-slider>
+                    </v-flex>
+                    <v-flex xs12>
+                      <div>Anzahl Texte pro Zettel: {{newGameTextCount}}</div>
+                    </v-flex>
+                    <v-flex xs12>
+                      <v-slider v-model="newGameTextCount"
+                                step="1" min="5" max="30"></v-slider>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -41,16 +47,16 @@
         </v-dialog>
         <v-list two-line>
           <v-subheader class="headline">{{runningGamesTitle}}</v-subheader>
-          <template v-for="item in runningGames">
+          <template v-for="item in status.runningGames">
             <v-list-tile v-bind:key="item.title" @click="openGame(item)">
               <v-list-tile-content>
-                <v-list-tile-title>{{item.name}}</v-list-tile-title>
+                <v-list-tile-title>{{item.name}} <span v-if="item.myTurn"> - <span class="primary--text">Dein Zug!</span></span></v-list-tile-title>
                 <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
           </template>
           <v-subheader class="headline">{{closedGamesTitle}}</v-subheader>
-          <template v-for="item in closedGames">
+          <template v-for="item in status.closedGames">
             <v-list-tile v-bind:key="item.title" @click="openGame(item)">
               <v-list-tile-content>
                 <v-list-tile-title>{{item.name}}</v-list-tile-title>
@@ -68,8 +74,12 @@
 <script>
   import { SocketClient } from '../services/SocketClient'
   import { SessionManager } from '../services/SessionManager'
+  import VSubheader from 'vuetify/src/components/VSubheader/VSubheader'
 
+  console.log(JSON.stringify(SessionManager))
+  console.log(SessionManager.status)
   export default {
+    components: {VSubheader},
     name: 'hello',
     data () {
       return {
@@ -85,21 +95,16 @@
         nameRules: [
           (v) => !!v || 'Name fehlt',
           (v) => v.length >= 3 || 'Mindestens 3 Zeichen',
-          (v) => v.length <= 20 || 'Maximal 50 Zeichen',
-          (v) => /^[a-zA-Z0-9]+$/.test(v) || 'Nur Buchstaben und Zahlen erlaubt'
+          (v) => v.length <= 50 || 'Maximal 50 Zeichen',
+          (v) => /^[a-zA-Z0-9 !?]+$/.test(v) || 'Nur Buchstaben und Zahlen erlaubt'
         ],
-        userRules: [(v) => v.length > 1 || 'Mindestens 2 Mitspieler nötig']
+        userRules: [(v) => v.length > 1 || 'Mindestens 2 Mitspieler nötig'],
+        status: SessionManager.status
       }
     },
     computed: {
-      runningGames: () => {
-        return SessionManager.status.runningGames
-      },
-      closedGames: () => {
-        return SessionManager.status.closedGames
-      },
       users () {
-        return Array.from(SessionManager.status.users.values())
+        return Array.from(this.status.users.values())
       }
     },
     methods: {
@@ -111,6 +116,7 @@
           console.log('new game is not valid')
           return
         }
+        this.createDialog = false
         SocketClient.createGame(this.newGameName, this.newGameSheetCount, this.newGameTextCount, this.newGameUsers)
       }
     }
