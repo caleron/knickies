@@ -22,8 +22,8 @@ class SocketManager {
     // if (document.location.hostname === 'localhost') {
     //  this.hostName = '192.168.1.103'
     // } else {
-    // this.hostName = document.location.hostname
-    this.hostName = '192.168.178.126'
+    this.hostName = document.location.hostname
+    // this.hostName = '192.168.178.126'
     // }
   }
 

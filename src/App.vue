@@ -1,7 +1,7 @@
 <template>
   <v-app :dark="darkTheme" :light="!darkTheme">
     <v-toolbar fixed app>
-      <v-toolbar-title v-text="title"></v-toolbar-title>
+      <v-toolbar-title>{{title}} <span v-if="status.currentUser"> - {{status.currentUser}}</span></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click.stop="darkTheme = !darkTheme">
         <v-icon>lightbulb_outline</v-icon>
@@ -10,18 +10,18 @@
     <v-content>
       <router-view></router-view>
     </v-content>
-    <v-footer app>
-      <span>&copy; 2017</span>
-    </v-footer>
   </v-app>
 </template>
 
 <script>
+  import { SessionManager } from './services/SessionManager'
+
   export default {
     data () {
       return {
         title: 'Knickies',
-        darkTheme: true
+        darkTheme: true,
+        status: SessionManager.status
       }
     }
   }

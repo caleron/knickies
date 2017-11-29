@@ -48,14 +48,14 @@
       return {
         title: 'Anmelden',
         valid: true,
-        name: 'paddy',
+        name: '',
         nameRules: [
           (v) => !!v || 'Name fehlt',
           (v) => v.length >= 3 || 'Mindestens 3 Zeichen',
           (v) => v.length <= 20 || 'Maximal 20 Zeichen',
           (v) => /^[a-zA-Z0-9]+$/.test(v) || 'Nur Buchstaben und Zahlen erlaubt'
         ],
-        password: '123',
+        password: '',
         passwordRules: [
           (v) => !!v || 'Password fehlt',
           (v) => v.length <= 5 || 'Maximal 5 Zeichen'

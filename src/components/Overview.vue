@@ -74,12 +74,10 @@
 <script>
   import { SocketClient } from '../services/SocketClient'
   import { SessionManager } from '../services/SessionManager'
-  import VSubheader from 'vuetify/src/components/VSubheader/VSubheader'
 
   console.log(JSON.stringify(SessionManager))
   console.log(SessionManager.status)
   export default {
-    components: {VSubheader},
     name: 'hello',
     data () {
       return {
