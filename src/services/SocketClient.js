@@ -104,9 +104,19 @@ class SocketManager {
     }
   }
 
-  sendMessage (command) {
+  sendMessage (command, isRetry = false) {
     if (this.socket.readyState !== WebSocket.OPEN) {
       console.log('did not send message: socket not open')
+      if (!isRetry) {
+        SessionManager.retryLogin().then(value => {
+          if (!value) {
+            return
+          }
+          this.sendMessage(command, true)
+        })
+      } else {
+        window.alert('Keine Verbindung :(')
+      }
       return
     }
     command.requestId = this.requestId++
