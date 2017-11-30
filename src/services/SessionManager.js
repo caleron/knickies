@@ -19,16 +19,20 @@ class Manager {
       if (token && token.length > 10) {
         this.token = token
         // token cookie exists, retrieve the clients for the token
-        return SocketClient.connect(null, null, this.token).then(() => {
-          return true
-        }).catch(() => {
-          // reset the cookie to not attempt login again
-          Cookies.remove(this.cookieName)
-          return false
-        })
+        return this.retryLogin()
       }
     }
     return Promise.resolve(this.token.length > 0)
+  }
+
+  retryLogin () {
+    return SocketClient.connect(null, null, this.token).then(() => {
+      return true
+    }).catch(() => {
+      // reset the cookie to not attempt login again
+      Cookies.remove(this.cookieName)
+      return false
+    })
   }
 
   updateStatus (answer) {

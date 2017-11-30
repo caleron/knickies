@@ -50,7 +50,7 @@
           <template v-for="item in status.runningGames">
             <v-list-tile v-bind:key="item.title" @click="openGame(item)">
               <v-list-tile-content>
-                <v-list-tile-title>{{item.name}} <span v-if="item.myTurn"> - <span class="primary--text">Dein Zug!</span></span></v-list-tile-title>
+                <v-list-tile-title :class="item.myTurn ? 'primary--text' : ''">{{item.name}}</v-list-tile-title>
                 <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
@@ -63,7 +63,6 @@
                 <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
-            <v-divider inset="true"></v-divider>
           </template>
         </v-list>
       </v-flex>

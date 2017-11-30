@@ -67,6 +67,12 @@ class SocketManager {
       socket.onclose = () => {
         this.connected = false
         console.log('socket closed')
+        // retry to connect if logged in
+        SessionManager.checkLoggedIn().then(loggedIn => {
+          if (loggedIn) {
+            SessionManager.retryLogin()
+          }
+        })
       }
       socket.onerror = (e) => {
         console.log(e)
@@ -127,11 +133,11 @@ class SocketManager {
     return this.sendMessage(payload)
   }
 
-  inviteUser (gameId, username) {
+  inviteUsers (gameId, users) {
     return this.sendMessage({
       action: 'inviteUser',
       gameId,
-      username
+      users
     })
   }
 
