@@ -97,16 +97,9 @@ class Manager {
       // remove the creator from the string
       users.splice(index, 1)
     }
-    let subtitle = 'mit&nbsp;<b>' + this.status.users.get(game.creator) + '</b>'
-    let count = 0
+    let subtitle = 'mit&nbsp;' + this.status.users.get(game.creator)
     for (let user of users) {
-      // max 3 entries
-      if (count >= 3) {
-        subtitle += ', ...'
-        break
-      }
       subtitle += ', ' + this.status.users.get(user)
-      count++
     }
     game.subtitle = subtitle
   }
@@ -114,4 +107,6 @@ class Manager {
 
 export let SessionManager = new Manager()
 window.sm = SessionManager
-window.onerror = window.alert
+window.give = () => {
+  window.prompt('status', JSON.stringify(window.sm.status))
+}

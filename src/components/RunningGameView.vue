@@ -22,7 +22,10 @@
                 <v-list-tile-title>Zettel {{sheet.number + 1}} <span
                         class="grey--text">({{sheet.texts.length}}/{{game.textCount}})</span>
                 </v-list-tile-title>
-                <v-list-tile-sub-title>Du bist nicht dran...</v-list-tile-sub-title>
+                <v-list-tile-sub-title>Du bist nicht dran... {{
+                  sheet.assignTime + 1000 * 3600 * 12 < new Date().getTime() ? ' (' + sheet.nextUser +
+                  ')' : '' }}
+                </v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
           </template>
