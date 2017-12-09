@@ -53,7 +53,7 @@ class Manager {
       this.setSubtitle(game)
 
       for (let sheet of game.sheets) {
-        if (sheet.nextUser.toLowerCase() === this.status.currentUser.toLowerCase()) {
+        if (sheet.nextUser && sheet.nextUser.toLowerCase() === this.status.currentUser.toLowerCase()) {
           game.myTurn = true
           break
         }

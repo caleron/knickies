@@ -23,6 +23,8 @@ class SocketManager {
     //  this.hostName = '192.168.1.103'
     // } else {
     this.hostName = document.location.hostname
+    this.protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
+    this.port = document.location.port === '' ? '' : ':3000'
     // this.hostName = '192.168.178.126'
     // }
   }
@@ -47,7 +49,7 @@ class SocketManager {
     this.lastConnectTime = Date.now()
 
     return new Promise((resolve, reject) => {
-      let socket = new WebSocket('ws://' + this.hostName + ':3000')
+      let socket = new WebSocket(this.protocol + '://' + this.hostName + this.port)
       socket.onopen = () => {
         console.log('open')
         this.connected = true
@@ -67,12 +69,16 @@ class SocketManager {
       socket.onclose = () => {
         this.connected = false
         console.log('socket closed')
-        // retry to connect if logged in
-        SessionManager.checkLoggedIn().then(loggedIn => {
-          if (loggedIn) {
-            SessionManager.retryLogin()
-          }
-        })
+        reject()
+        // retry to connect if logged in max every 10s
+        setTimeout(() => {
+          console.log('trying to reconnect')
+          SessionManager.checkLoggedIn().then(loggedIn => {
+            if (loggedIn) {
+              SessionManager.retryLogin()
+            }
+          })
+        }, Math.max(this.lastConnectTime + 1000 * 10 - Date.now(), 1000))
       }
       socket.onerror = (e) => {
         console.log(e)
@@ -162,6 +168,14 @@ class SocketManager {
 
   registerUser (username, password) {
     return this.connect(username, password, null, true)
+  }
+
+  setGameName (gameId, name) {
+    return this.sendMessage({
+      action: 'setGameName',
+      name,
+      gameId
+    })
   }
 }
 

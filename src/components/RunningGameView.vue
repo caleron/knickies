@@ -7,7 +7,7 @@
         <v-btn v-if="game.running" primary @click="showInviteDialog = true">Einladen</v-btn>
         <v-list two-line v-if="game.running">
           <template v-for="sheet in game.sheets">
-            <v-list-tile v-if="sheet.nextUser.toLowerCase() === status.currentUser.toLowerCase()"
+            <v-list-tile v-if="sheet.nextUser && sheet.nextUser.toLowerCase() === status.currentUser.toLowerCase()"
                          v-bind:key="sheet.number"
                          @click="showDialog(sheet)">
               <v-list-tile-content>
