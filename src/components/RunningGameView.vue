@@ -5,6 +5,7 @@
         <h1 class="headline">{{game.name}}</h1>
         <v-subheader v-html="game.subtitle"></v-subheader>
         <v-btn v-if="game.running" primary @click="showInviteDialog = true">Einladen</v-btn>
+        <v-btn v-if="game.running" secondary @click="showExcludeDialog = true">Kick</v-btn>
         <v-list two-line v-if="game.running">
           <template v-for="sheet in game.sheets">
             <v-list-tile v-if="sheet.nextUser && sheet.nextUser.toLowerCase() === status.currentUser.toLowerCase()"
@@ -15,6 +16,14 @@
                         class="grey--text">({{sheet.texts.length}}/{{game.textCount}})</span>
                 </v-list-tile-title>
                 <v-list-tile-sub-title>Du bist dran!</v-list-tile-sub-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-tile v-else-if="sheet.texts.length >= game.textCount" v-bind:key="sheet.number">
+              <v-list-tile-content>
+                <v-list-tile-title>Zettel {{sheet.number + 1}} <span
+                        class="grey--text">({{sheet.texts.length}}/{{game.textCount}})</span>
+                </v-list-tile-title>
+                <v-list-tile-sub-title>Warte, bis alle Zettel fertig sind</v-list-tile-sub-title>
               </v-list-tile-content>
             </v-list-tile>
             <v-list-tile v-else v-bind:key="sheet.number">
@@ -93,6 +102,23 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="showExcludeDialog" max-width="500">
+      <v-card>
+        <v-card-title class="headline">Nutzer ausschließen</v-card-title>
+        <v-card-text>
+          <p v-if="expiredUsers.length === 0">
+            Blocken erst nach 16 Stunden möglich!
+          </p>
+          <v-select v-else label="Teilnehmer" v-model="userToExclude" :items="expiredUsers"
+                    required :rules="userRules"></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat @click="showExcludeDialog = false">Abbrechen</v-btn>
+          <v-btn primary @click="excludeUsers()" v-if="expiredUsers.length > 0">Kick</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -110,9 +136,11 @@
         dialogSheet: {texts: []},
         newText: '',
         status: SessionManager.status,
+        showExcludeDialog: false,
         showInviteDialog: false,
         userToInvite: [],
-        userRules: [(v) => v.length > 0 || 'Bitte Nutzer auswählen']
+        userRules: [(v) => v.length > 0 || 'Bitte Nutzer auswählen'],
+        userToExclude: ''
       }
     },
     computed: {
@@ -131,6 +159,15 @@
           }
         }
         return ret
+      },
+      expiredUsers () {
+        let expiredUsers = []
+        for (let sheet of this.game.sheets) {
+          if (sheet.assignTime + 1000 * 3600 * 16 < new Date().getTime()) {
+            expiredUsers.push(sheet.nextUser)
+          }
+        }
+        return expiredUsers
       }
     },
     methods: {
@@ -153,6 +190,12 @@
         this.showInviteDialog = false
         if (this.userToInvite.length > 0) {
           SocketClient.inviteUsers(this.game.id, this.userToInvite)
+        }
+      },
+      excludeUsers () {
+        this.showExcludeDialog = false
+        if (this.userToExclude.length > 0) {
+          SocketClient.excludeUser(this.game.id, this.userToExclude)
         }
       }
     }

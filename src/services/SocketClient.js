@@ -177,6 +177,14 @@ class SocketManager {
       gameId
     })
   }
+
+  excludeUser (gameId, username) {
+    return this.sendMessage({
+      action: 'excludeUser',
+      gameId,
+      username
+    })
+  }
 }
 
 export let SocketClient = new SocketManager()
