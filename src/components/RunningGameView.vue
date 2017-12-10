@@ -195,7 +195,7 @@
       excludeUsers () {
         this.showExcludeDialog = false
         if (this.userToExclude.length > 0) {
-          SocketClient.excludeUser(this.game.id, this.userToExclude)
+          SocketClient.excludeUser(this.game.id, this.userToExclude, false)
         }
       }
     }

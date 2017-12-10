@@ -178,11 +178,12 @@ class SocketManager {
     })
   }
 
-  excludeUser (gameId, username) {
+  excludeUser (gameId, username, force) {
     return this.sendMessage({
       action: 'excludeUser',
       gameId,
-      username
+      username,
+      force
     })
   }
 }
