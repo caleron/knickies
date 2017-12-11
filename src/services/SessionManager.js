@@ -42,7 +42,9 @@ class Manager {
 
     if (answer.token) {
       this.token = answer.token
-      Cookies.set(this.cookieName, this.token)
+      Cookies.set(this.cookieName, this.token, {
+        expires: 7000
+      })
     }
     // map users to their lowercase
     this.status.users = new Map()
