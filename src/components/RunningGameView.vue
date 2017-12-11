@@ -163,7 +163,7 @@
       expiredUsers () {
         let expiredUsers = []
         for (let sheet of this.game.sheets) {
-          if (sheet.assignTime + 1000 * 3600 * 16 < new Date().getTime()) {
+          if (sheet.assignTime + 1000 * 3600 * 16 < new Date().getTime() && sheet.nextUser) {
             expiredUsers.push(sheet.nextUser)
           }
         }
